@@ -1,0 +1,67 @@
+#!/bin/bash
+
+
+tput civis
+
+# x is horizontal
+x=(0)
+
+# y is vertical
+y=(0)
+
+# 
+dx=(1 0 0 -1)
+dy=(0 -1 1 0)
+
+# direction of the snake
+# 0: right, 1: top, 2: down, 3: left
+dir=0
+cur_dir=0
+
+# length of the snake
+snake_len=3
+
+for ((i = 0; i < snake_len; i++)); do
+	x[i]=$(( snake_len - i - 1 ))
+	y[i]=0
+done
+
+# expression of the snake
+snake="o"
+
+#movement of the snake
+snake_move() {
+	if (( cur_dir == 3 - dir && snake_len > 1)); then
+		dir=$cur_dir
+	fi
+	cur_dir=$dir
+	for ((i=snake_len - 1; i > 0; i--)); do
+		(( j = i - 1 ))
+		x[$i]=${x[$j]}
+		y[$i]=${y[$j]}
+	done
+
+	x[0]=$(( x[0] + dx[cur_dir]*2  ))
+	y[0]=$(( y[0] + dy[cur_dir]  ))
+}
+
+while true; do
+	# tput cup row column
+	# row: y
+	# column: x
+	tput clear
+	for ((i = 0; i < snake_len; i++)); do
+		tput cup ${y[$i]} ${x[$i]}
+		echo "$snake"
+	done
+
+	read -rsn1 -t 0.5 key
+	case "$key" in
+		w) dir=1;;
+		s) dir=2;;
+		a) dir=3;;
+		d) dir=0;;
+	esac
+
+	snake_move
+done
