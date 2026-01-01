@@ -8,7 +8,7 @@ This repo is a shell snake game
 ```bash
 git clone https://github.com/duckad28/shnake.git
 cd shnake
-find -f | xargs chmod +x
+find -type f | xargs chmod +x
 ```
 
 # Play

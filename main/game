@@ -2,66 +2,143 @@
 
 
 tput civis
-
+tput clear
+map_width=30
+map_height=30
+map_wall=1
+wall="="
+xfood=0
+yfood=0
+food="f"
 # x is horizontal
 x=(0)
-
 # y is vertical
 y=(0)
-
 # 
 dx=(1 0 0 -1)
 dy=(0 -1 1 0)
-
 # direction of the snake
 # 0: right, 1: top, 2: down, 3: left
 dir=0
 cur_dir=0
-
 # length of the snake
-snake_len=3
+snake_len=1
 
-for ((i = 0; i < snake_len; i++)); do
-	x[i]=$(( snake_len - i - 1 ))
-	y[i]=0
-done
-
+init_snake() {
+	for ((i = 0; i < snake_len; i++)); do
+		x[i]=$(( snake_len - i - 1 + map_wall))
+		y[i]=$map_wall
+	done
+}
 # expression of the snake
 snake="o"
 
+#load map
+load_map() {
+	for (( i=0; i < map_width; i++ )); do
+		tput cup 0 $i
+		echo "$wall"
+		tput cup $(($map_height - 1)) $i
+		echo "$wall"
+	done
+	for (( i=1; i < map_height - 1; i++ )); do
+		tput cup $i $(($map_width - 1))
+		echo "$wall"
+		tput cup $i 0
+		echo "$wall"
+	done
+}
+
+load_snake() {
+	for ((i = 0; i < snake_len; i++)); do
+		tput cup ${y[$i]} ${x[$i]}
+		echo "$snake"
+	done
+}
 #movement of the snake
 snake_move() {
 	if (( cur_dir == 3 - dir && snake_len > 1)); then
 		dir=$cur_dir
 	fi
 	cur_dir=$dir
+	
+	new_x=$(( x[0] + dx[cur_dir]  ))
+	new_y=$(( y[0] + dy[cur_dir]  ))
+	if (( new_x == 0 || new_x == map_width-1 || new_y == 0 || new_y == map_height-1 )); then
+		snake_len=1
+		cur_dir=0
+		dir=0
+		x[0]=0
+		y[0]=0
+		tput clear
+		init_snake
+		load_map
+		load_food
+		load_snake
+		return 1
+	fi
+	if (( x[0] == xfood && y[0] == yfood )); then
+		load_food
+		snake_len=$(( snake_len + 1 ))
+	else
+		tput cup ${y[-1]} ${x[-1]}
+		echo " "
+	fi
 	for ((i=snake_len - 1; i > 0; i--)); do
 		(( j = i - 1 ))
 		x[$i]=${x[$j]}
 		y[$i]=${y[$j]}
 	done
 
-	x[0]=$(( x[0] + dx[cur_dir]*2  ))
+	x[0]=$(( x[0] + dx[cur_dir]  ))
 	y[0]=$(( y[0] + dy[cur_dir]  ))
+	tput cup ${y[0]} ${x[0]}
+	echo "$snake"
 }
+
+load_food() {
+	local xmin=$map_wall
+	local xmax=$(( map_width-map_wall-1 ))
+	local ymin=$map_wall
+	local ymax=$(( map_height-map_wall-1 ))
+	local xrand=$(( RANDOM % (xmax-xmin+1) + xmin ))
+	local yrand=$(( RANDOM % (ymax-ymin+1) + ymin ))
+	xfood=$xrand
+	yfood=$yrand
+	tput cup "$yfood" "$xfood"
+	echo "$food"
+}
+init_snake
+load_snake
+load_map
+load_food
 
 while true; do
 	# tput cup row column
 	# row: y
 	# column: x
-	tput clear
-	for ((i = 0; i < snake_len; i++)); do
-		tput cup ${y[$i]} ${x[$i]}
-		echo "$snake"
-	done
+	#tput clear
 
-	read -rsn1 -t 0.5 key
+
+	start_time=$(( $( date +%s%3N ) % 10000))
+	tput cup 0 100
+
+	read -rsn 1 -t 0.2 key
 	case "$key" in
 		w) dir=1;;
 		s) dir=2;;
 		a) dir=3;;
 		d) dir=0;;
+		q) tput clear; break;;
 	esac
-
+	
+	end_time=$(( $( date +%s%3N ) % 10000))
+	remain=$(( (200 - (end_time - start_time)) ))
+        
+	remain_s=$(awk "BEGIN { print $remain/1000 }")
+	if [[ $remain -gt 0 && $remain -lt 1000 ]]; then
+		sleep $remain_s
+	fi
 	snake_move
+	
 done
