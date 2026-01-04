@@ -68,8 +68,8 @@ snake_move() {
 		snake_len=1
 		cur_dir=0
 		dir=0
-		x[0]=0
-		y[0]=0
+		x=(0)
+		y=(0)
 		tput clear
 		init_snake
 		load_map
