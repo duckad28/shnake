@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+tput clear
+tput civis
+
+options=('RESUME' 'START' 'HELP' 'EXIT')
+
+for ((i = 0; i < "${#options[@]}"; i++ )); do
+	echo "${options[$i]}"
+done
+row=0
+col=20
+tput cup "$row" "$col"
+echo "o"
+while [[ true  ]]; do
+	tput cup 0 1000
+	read -n 1 -r press
+	tput cup "$row" "$col"
+	case "$press" in
+		s) echo " ";;
+		w) echo " ";;
+	esac
+done
