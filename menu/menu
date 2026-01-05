@@ -14,10 +14,18 @@ tput cup "$row" "$col"
 echo "o"
 while [[ true  ]]; do
 	tput cup 0 1000
-	read -n 1 -r press
+	read -n 1 -s -r press
 	tput cup "$row" "$col"
 	case "$press" in
-		s) echo " ";;
-		w) echo " ";;
+		s) echo " "; row=$(( row + 1 ));;
+		w) echo " "; row=$(( row - 1 ));;
+		"") break;;
 	esac
+	row=$(( (row + 4)%4 ))
+	tput cup "$row" "$col"
+	echo "o"
 done
+
+tput clear
+echo "${options[$row]}"
+
