@@ -3,7 +3,9 @@
 tput clear
 tput civis
 
+
 options=('RESUME' 'START' 'HELP' 'EXIT')
+options_commands=("./*main/game" "./*main/game" 'exit 1' 'exit 1')
 
 for ((i = 0; i < "${#options[@]}"; i++ )); do
 	echo "${options[$i]}"
@@ -27,5 +29,5 @@ while [[ true  ]]; do
 done
 
 tput clear
-echo "${options[$row]}"
+${options_commands[$row]}
 
